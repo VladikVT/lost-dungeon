@@ -1,6 +1,8 @@
 import socket
 import threading
 
+from login import LRform
+
 # Connection Data
 host = '127.0.0.1'
 port = 4000
@@ -52,6 +54,9 @@ def receive():
         nicknames.append(nickname)
         clients.append(client)
 
+        form = LRform()
+        form.registration(nickname)
+
         # Print And Broadcast Nickname
         print("Nickname is " + nickname)
         client.send('Connected to server!\n'.encode('ascii'))
@@ -62,4 +67,6 @@ def receive():
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
-receive()
+if __name__ == "__main__":
+    print("---=== SERVER START ===---")
+    receive()
