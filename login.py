@@ -25,6 +25,16 @@ class LRform():
                 return False, None
         else:
             return False, None
+    
+    def checkPerms(self, login, perm):
+        # Permissions: "p000000"
+        # 1.   Chat
+        # 2.   Ban
+        # 3-6. Other 
+        # 0 - false; 1 - true
+        self.cursor.execute("SELECT * FROM users WHERE name = ?", (login, ))
+        perms = self.cursor.fetchone()
+        return str(perms[3])[perm + 1]
 
     def stop(self):
         self.conn.close()

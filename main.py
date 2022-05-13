@@ -23,15 +23,22 @@ def broadcast(nickname, message):
     for client in clients:
         client.send(msg.encode('ascii'))
 
-def handle(client):
+def handle(client, login):
+    form = LRform()
     while True:
         try:
             index = clients.index(client)
             nickname = nicknames[index] + ": "
             # Broadcasting Messages
-            message = client.recv(1024)
-            broadcast(nickname, message)
-        except:
+            message = client.recv(1024).decode('ascii')
+            if message[0] == "!":
+                if form.checkPerms(login, 0) == "1":
+                    message = message[1:]
+                    broadcast(nickname, message.encode('ascii'))
+                else:
+                    client.send('You not have permissions to chat'.encode('ascii'))
+        except Exception as err:
+            print(err)
             # Removing And Closing Clients
             print("{} disconnected!".format(client.getpeername()))
             index = clients.index(client)
@@ -58,7 +65,7 @@ def receive():
         password = ""
         try:
             while True:
-                client.send('has account? [y/n] '.encode('ascii'))
+                client.send('Has account? [y/n] '.encode('ascii'))
                 hasAcc = client.recv(1024).decode('ascii').strip()
                 if hasAcc in "yes" or hasAcc in "not":
                     break
@@ -82,21 +89,27 @@ def receive():
                     successLogin, nickname = form.login(login, password)
                     if not successLogin:
                         client.send('Not correct login or password\n'.encode('ascii'))
+            if form.checkPerms(login, 1) == "1":
+                client.send('This account has banned\n'.encode('ascii'))
+                print("{} disconnected!".format(client.getpeername()))
+                client.close()
+                continue
         except:
-            pass
+            print("{} disconnected!".format(client.getpeername()))
+            client.close()
+            continue
 
         nicknames.append(nickname)
         clients.append(client)
 
-
         # Print And Broadcast Nickname
-        print("Nickname is ", nickname)
+        print("Nickname is", nickname)
         client.send('Connected to server!\n'.encode('ascii'))
         msg = str(nickname) + " joined!\n"
         broadcast("SERVER: ", msg.encode('ascii'))
 
         # Start Handling Thread For Client
-        thread = threading.Thread(target=handle, args=(client,))
+        thread = threading.Thread(target=handle, args=(client, login, ))
         thread.start()
 
 if __name__ == "__main__":
