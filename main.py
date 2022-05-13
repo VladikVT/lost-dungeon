@@ -33,6 +33,7 @@ def handle(client):
             broadcast(nickname, message)
         except:
             # Removing And Closing Clients
+            print("{} disconnected!".format(client.getpeername()))
             index = clients.index(client)
             clients.remove(client)
             client.close()
@@ -44,23 +45,54 @@ def handle(client):
 # Receiving / Listening Function
 def receive():
     while True:
+        form = LRform()
         # Accept Connection
         client, address = server.accept()
         print("Connected with {}".format(str(address)))
+        
+        # Has account or not
+        successLogin = False
+        hasAcc = ""
+        login = ""
+        nickname = ""
+        password = ""
+        try:
+            while True:
+                client.send('has account? [y/n] '.encode('ascii'))
+                hasAcc = client.recv(1024).decode('ascii').strip()
+                if hasAcc in "yes" or hasAcc in "not":
+                    break
+            while not successLogin:
+                if hasAcc in "not":
+                    client.send('Your login: '.encode('ascii'))
+                    login = client.recv(1024).decode('ascii').strip()
+                    client.send('Your nickname: '.encode('ascii'))
+                    nickname = client.recv(1024).decode('ascii').strip()
+                    client.send('Your password: '.encode('ascii'))
+                    password = client.recv(1024).decode('ascii').strip()
+                    successLogin = form.registration(login, nickname, password)
+                    if not successLogin:
+                        msg = "Login {} already used\n".format(login)
+                        client.send(msg.encode('ascii'))
+                elif hasAcc in "yes":
+                    client.send('Your login: '.encode('ascii'))
+                    login = client.recv(1024).decode('ascii').strip()
+                    client.send('Your password: '.encode('ascii'))
+                    password = client.recv(1024).decode('ascii').strip()
+                    successLogin, nickname = form.login(login, password)
+                    if not successLogin:
+                        client.send('Not correct login or password\n'.encode('ascii'))
+        except:
+            pass
 
-        # Request And Store Nickname
-        client.send('NICK'.encode('ascii'))
-        nickname = client.recv(1024).decode('ascii').strip()
         nicknames.append(nickname)
         clients.append(client)
 
-        form = LRform()
-        form.registration(nickname)
 
         # Print And Broadcast Nickname
-        print("Nickname is " + nickname)
+        print("Nickname is ", nickname)
         client.send('Connected to server!\n'.encode('ascii'))
-        msg = nickname + " joined!\n"
+        msg = str(nickname) + " joined!\n"
         broadcast("SERVER: ", msg.encode('ascii'))
 
         # Start Handling Thread For Client
