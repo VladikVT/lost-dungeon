@@ -57,7 +57,7 @@ def handle(client, login):
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast("SERVER: ", '{} left!'.format(nickname).encode('ascii'))
+            broadcast("SERVER: ", '{} left!\n'.format(nickname).encode('ascii'))
             nicknames.remove(nickname)
             cmd.stop()
             break
@@ -104,7 +104,7 @@ def receive():
                     if not successLogin:
                         client.send('Not correct login or password\n'.encode('ascii'))
             cmd = Executor(login)
-            if cmd.checkPerms(1) == "1":
+            if cmd.checkPerms(1) == "0":
                 client.send('This account has banned\n'.encode('ascii'))
                 print("{} disconnected!".format(client.getpeername()))
                 form.stop()
