@@ -2,6 +2,7 @@ import socket
 import threading
 
 from login import LRform
+from commands import Executor
 
 # Connection Data
 host = '127.0.0.1'
@@ -24,19 +25,30 @@ def broadcast(nickname, message):
         client.send(msg.encode('ascii'))
 
 def handle(client, login):
-    form = LRform()
+    cmd = Executor(login)
     while True:
         try:
             index = clients.index(client)
             nickname = nicknames[index] + ": "
             # Broadcasting Messages
-            message = client.recv(1024).decode('ascii')
+            message = client.recv(1024).decode('ascii').strip()
+            if message == "":
+                continue
             if message[0] == "!":
-                if form.checkPerms(login, 0) == "1":
-                    message = message[1:]
+                if cmd.checkPerms(0) == "1":
+                    message = str(message[1:]) + "\n"
                     broadcast(nickname, message.encode('ascii'))
                 else:
-                    client.send('You not have permissions to chat'.encode('ascii'))
+                    client.send('You not have permissions to chat\n'.encode('ascii'))
+            else:
+                if not cmd.checkCommand(message):
+                    client.send('Not correct command! For see command list write "help"\n'.encode('ascii'))
+                else:
+                    msg = cmd.makeCommand(message) + "\n"
+                    if msg[0] == "c":
+                        match msg[1]:
+                            case "0": 1 / 0 # Error for quit =)
+                    client.send(msg.encode('ascii'))
         except Exception as err:
             print(err)
             # Removing And Closing Clients
@@ -47,12 +59,14 @@ def handle(client, login):
             nickname = nicknames[index]
             broadcast("SERVER: ", '{} left!'.format(nickname).encode('ascii'))
             nicknames.remove(nickname)
+            cmd.stop()
             break
 
 # Receiving / Listening Function
 def receive():
     while True:
         form = LRform()
+        cmd = None
         # Accept Connection
         client, address = server.accept()
         print("Connected with {}".format(str(address)))
@@ -89,13 +103,17 @@ def receive():
                     successLogin, nickname = form.login(login, password)
                     if not successLogin:
                         client.send('Not correct login or password\n'.encode('ascii'))
-            if form.checkPerms(login, 1) == "1":
+            cmd = Executor(login)
+            if cmd.checkPerms(1) == "1":
                 client.send('This account has banned\n'.encode('ascii'))
                 print("{} disconnected!".format(client.getpeername()))
+                form.stop()
                 client.close()
                 continue
-        except:
+        except Exception as err:
+            print(err)
             print("{} disconnected!".format(client.getpeername()))
+            form.stop()
             client.close()
             continue
 
@@ -111,6 +129,8 @@ def receive():
         # Start Handling Thread For Client
         thread = threading.Thread(target=handle, args=(client, login, ))
         thread.start()
+        
+        form.stop()
 
 if __name__ == "__main__":
     print("---=== SERVER START ===---")
