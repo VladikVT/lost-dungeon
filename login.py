@@ -9,7 +9,7 @@ class LRform():
         self.cursor.execute("SELECT * FROM users WHERE name = ?", (login, ))
         if self.cursor.fetchone() != None:
             return False
-        self.cursor.execute("INSERT INTO users VALUES (?, ?, ?, 'p100000')", (login, nickname, password, ))
+        self.cursor.execute("INSERT INTO users (name, nick, password) VALUES (?, ?, ?)", (login, nickname, password, ))
         self.conn.commit()
         print("Create new user: {}, {}, {}".format(login, nickname, password))
         return True
