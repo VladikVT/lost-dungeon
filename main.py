@@ -65,7 +65,7 @@ async def receive():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((host, port))
-    server.listen(8)
+    server.listen()
     server.setblocking(False)
 
     loop = asyncio.get_event_loop()
@@ -139,4 +139,6 @@ async def receive():
 
 if __name__ == "__main__":
     print("---=== SERVER START ===---")
+    print("Host:", host)
+    print("Port:", port)
     asyncio.run(receive())
