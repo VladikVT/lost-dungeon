@@ -99,9 +99,9 @@ class Executor():
                 if self.checkPerms(4) == "1":
                     print("User", arguments, "unmuted by", self.login)
                     msgs = [
-                            "User {arguments} not found!",
-                            "User {arguments} already unmuted!",
-                            "User {arguments} unmuted success!"
+                            f"User {arguments} not found!",
+                            f"User {arguments} already unmuted!",
+                            f"User {arguments} unmuted success!"
                             ]
                     return self.changePerm(arguments, 1, True, msgs)
                 else:
