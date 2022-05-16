@@ -1,13 +1,16 @@
 import socket
 import asyncio
+from datetime import datetime
+import logging
 
 from login import LRform
 from commands import Executor
 
+logging.basicConfig(filename='.log', encoding='utf-8', format="[%(asctime)s] %(levelname)s: %(message)s", level=logging.NOTSET)
+
 # Connection Data
 host = ""
 port = 4000
-
 
 # Lists For Clients and Their Nicknames
 clients = []
@@ -16,7 +19,7 @@ nicknames = []
 # Sending Messages To All Connected Clients
 async def broadcast(nickname, message):
     loop = asyncio.get_event_loop()
-    msg = nickname + message.decode("utf-8")
+    msg = f"[{datetime.now().strftime('%H:%M %d/%m/%Y')}] {nickname}: {message.decode('utf-8')}"
     for client in clients:
         await loop.sock_sendall(client, msg.encode("utf-8"))
 
@@ -26,7 +29,7 @@ async def handle(client, login):
     while True:
         try:
             index = clients.index(client)
-            nickname = f"{nicknames[index]}: "
+            nickname = nicknames[index]
             # Broadcasting Messages
             message = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
             if message == "":
@@ -47,14 +50,14 @@ async def handle(client, login):
                             case "0": 1 / 0 # Error for quit =)
                     await loop.sock_sendall(client, msg.encode("utf-8"))            
         except Exception as err:
-            print(err)
+            logging.error(f"{err}")
             # Removing And Closing Clients
-            print(f"{client.getpeername()} disconnected!")
+            logging.info(f"{client.getpeername()} disconnected!")
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            await broadcast("SERVER: ", f"{nickname} left!\n".encode("utf-8"))
+            await broadcast("SERVER", f"{nickname} left!\n".encode("utf-8"))
             nicknames.remove(nickname)
             cmd.stop()
             break
@@ -75,7 +78,7 @@ async def receive():
         cmd = None
         # Accept Connection
         client, address = await loop.sock_accept(server)
-        print(f"Connected with {address}")
+        logging.info(f"Connected with {address}")
         
         # Has account or not
         successLogin = False
@@ -99,7 +102,7 @@ async def receive():
                     password = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
                     successLogin = form.registration(login, nickname, password)
                     if not successLogin:
-                        msg = f"Login {login} already used\n"
+                        msg = f"Login {login} already used or nick not \n"
                         client.send(msg.encode("utf-8"))
                 elif hasAcc in "yes":
                     client.send("Your login: ".encode("utf-8"))
@@ -113,13 +116,13 @@ async def receive():
 
             if cmd.checkPerms(1) == "0":
                 client.send("This account has banned\n".encode("utf-8"))
-                print(f"{address} disconnected!")
+                logging.info(f"{address} disconnected!")
                 form.stop()
                 client.close()
                 continue
         except Exception as err:
-            print(err)
-            print(f"{address} disconnected!")
+            logging.error(f"{err}")
+            logging.info(f"{address} disconnected!")
             form.stop()
             client.close()
             continue
@@ -128,17 +131,17 @@ async def receive():
         clients.append(client)
 
         # Print And Broadcast Nickname
-        print("Nickname is", nickname)
+        logging.info(f"Nickname is {nickname}")
         client.send("Connected to server!\n".encode("utf-8"))
         msg = f"{nickname} joined!\n"
-        await broadcast("SERVER: ", msg.encode("utf-8"))
+        await broadcast("SERVER", msg.encode("utf-8"))
 
         form.stop()
 
         loop.create_task(handle(client, login))
 
 if __name__ == "__main__":
-    print("---=== SERVER START ===---")
-    print("Host:", host)
-    print("Port:", port)
+    logging.info(f"--- === SERVER START === ---")
+    logging.info(f"Host: {host}")
+    logging.info("Port: {port}")
     asyncio.run(receive())

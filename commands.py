@@ -1,4 +1,6 @@
 import sqlite3
+from datetime import datetime
+import logging
 
 # Permissions: "p000000" (default: "p100000")
 # \/ index
@@ -55,7 +57,7 @@ class Executor():
             # ban
             case 1:
                 if self.checkPerms(3) == "1":
-                    print(f"User {arguments} bunned by {self.login}")
+                    logging.info(f"User {arguments} bunned by {self.login}")
                     msgs = [
                             f"User {arguments} not found!",
                             f"User {arguments} already banned!",
@@ -71,7 +73,7 @@ class Executor():
             # unban
             case 3:
                 if self.checkPerms(3) == "1":
-                    print(f"User {arguments} unbunned by {self.login}")
+                    logging.info(f"User {arguments} unbunned by {self.login}")
                     msgs = [
                             f"User {arguments} not found!",
                             f"User {arguments} already unbanned!",
@@ -84,7 +86,7 @@ class Executor():
             # mute
             case 4:
                 if self.checkPerms(4) == "1":
-                    print("User", arguments, "muted by", self.login)
+                    logging.info(f"User {arguments} muted by {self.login}")
                     msgs = [
                             f"User {arguments} not found!",
                             f"User {arguments} already muted!",
@@ -97,7 +99,7 @@ class Executor():
             # unmute
             case 5:
                 if self.checkPerms(4) == "1":
-                    print("User", arguments, "unmuted by", self.login)
+                    logging.info(f"User {arguments} unmuted by {self.login}")
                     msgs = [
                             f"User {arguments} not found!",
                             f"User {arguments} already unmuted!",

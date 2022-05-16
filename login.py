@@ -1,4 +1,6 @@
 import sqlite3
+from datetime import datetime
+import logging
 
 class LRform():
     def __init__(self):
@@ -7,11 +9,11 @@ class LRform():
 
     def registration(self, login, nickname, password):
         self.cursor.execute("SELECT * FROM users WHERE name = ?", (login, ))
-        if self.cursor.fetchone() != None:
+        if self.cursor.fetchone() != None or login == "SERVER" or nickname == "SERVER":
             return False
         self.cursor.execute("INSERT INTO users (name, nick, password) VALUES (?, ?, ?)", (login, nickname, password, ))
         self.conn.commit()
-        print(f"Create new user: {login}, {nickname}")
+        logging.info(f"Create new user: {login}, {nickname}")
         return True
 
     def login(self, login, password):
@@ -19,7 +21,7 @@ class LRform():
         getUser = self.cursor.fetchone()
         if getUser != None:
             if password == getUser[2]:
-                print(f"User {login} login")
+                logging.info(f"User {login} login")
                 return True, getUser[1]
             else:
                 return False, None
