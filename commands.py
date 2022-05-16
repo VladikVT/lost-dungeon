@@ -19,7 +19,7 @@ class Executor():
     
     commands = [    # Perms to change user perms \/
             "help",      # print all commands
-            "ban",       # ban user,     p3 == 1, 
+            "ban",       # ban user,          p3 == 1, 
             "quit",      # quit from server
             "unban",     # unban user,        p3 == 1
             "mute",      # mute user,         p4 == 1
@@ -55,11 +55,11 @@ class Executor():
             # ban
             case 1:
                 if self.checkPerms(3) == "1":
-                    print("User", arguments, "bunned by", self.login)
+                    print(f"User {arguments} bunned by {self.login}")
                     msgs = [
-                            "User {} not found!".format(arguments),
-                            "User {} already banned!".format(arguments),
-                            "User {} bunned success!".format(arguments)
+                            f"User {arguments} not found!",
+                            f"User {arguments} already banned!",
+                            f"User {arguments} bunned success!"
                             ]
                     return self.changePerm(arguments, 2, False, msgs)
                 else:
@@ -71,11 +71,11 @@ class Executor():
             # unban
             case 3:
                 if self.checkPerms(3) == "1":
-                    print("User", arguments, "unbunned by", self.login)
+                    print(f"User {arguments} unbunned by {self.login}")
                     msgs = [
-                            "User {} not found!".format(arguments),
-                            "User {} already unbanned!".format(arguments),
-                            "User {} unbunned success!".format(arguments)
+                            f"User {arguments} not found!",
+                            f"User {arguments} already unbanned!",
+                            f"User {arguments} unbunned success!"
                             ]
                     return self.changePerm(arguments, 2, True, msgs)
                 else:
@@ -86,9 +86,9 @@ class Executor():
                 if self.checkPerms(4) == "1":
                     print("User", arguments, "muted by", self.login)
                     msgs = [
-                            "User {} not found!".format(arguments),
-                            "User {} already muted!".format(arguments),
-                            "User {} muted success!".format(arguments)
+                            f"User {arguments} not found!",
+                            f"User {arguments} already muted!",
+                            f"User {arguments} muted success!"
                             ]
                     return self.changePerm(arguments, 1, False, msgs)
                 else:
@@ -99,9 +99,9 @@ class Executor():
                 if self.checkPerms(4) == "1":
                     print("User", arguments, "unmuted by", self.login)
                     msgs = [
-                            "User {} not found!".format(arguments),
-                            "User {} already unmuted!".format(arguments),
-                            "User {} unmuted success!".format(arguments)
+                            "User {arguments} not found!",
+                            "User {arguments} already unmuted!",
+                            "User {arguments} unmuted success!"
                             ]
                     return self.changePerm(arguments, 1, True, msgs)
                 else:

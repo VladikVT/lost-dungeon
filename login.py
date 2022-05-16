@@ -11,7 +11,7 @@ class LRform():
             return False
         self.cursor.execute("INSERT INTO users (name, nick, password) VALUES (?, ?, ?)", (login, nickname, password, ))
         self.conn.commit()
-        print("Create new user: {}, {}, {}".format(login, nickname, password))
+        print(f"Create new user: {login}, {nickname}")
         return True
 
     def login(self, login, password):
@@ -19,7 +19,7 @@ class LRform():
         getUser = self.cursor.fetchone()
         if getUser != None:
             if password == getUser[2]:
-                print("User", login, "login")
+                print(f"User {login} login")
                 return True, getUser[1]
             else:
                 return False, None

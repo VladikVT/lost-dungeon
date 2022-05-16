@@ -5,7 +5,7 @@ from login import LRform
 from commands import Executor
 
 # Connection Data
-host = ''
+host = ""
 port = 4000
 
 
@@ -16,9 +16,9 @@ nicknames = []
 # Sending Messages To All Connected Clients
 async def broadcast(nickname, message):
     loop = asyncio.get_event_loop()
-    msg = nickname + message.decode('ascii')
+    msg = nickname + message.decode("utf-8")
     for client in clients:
-        await loop.sock_sendall(client, msg.encode('ascii'))
+        await loop.sock_sendall(client, msg.encode("utf-8"))
 
 async def handle(client, login):
     loop = asyncio.get_event_loop()
@@ -26,35 +26,35 @@ async def handle(client, login):
     while True:
         try:
             index = clients.index(client)
-            nickname = nicknames[index] + ": "
+            nickname = f"{nicknames[index]}: "
             # Broadcasting Messages
-            message = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
+            message = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
             if message == "":
                 continue
             if message[0] == "!":
                 if cmd.checkPerms(0) == "1":
                     message = str(message[1:]) + "\n"
-                    await broadcast(nickname, message.encode('ascii'))
+                    await broadcast(nickname, message.encode("utf-8"))
                 else:
-                    await loop.sock_sendall(client, 'You not have permissions to chat\n'.encode('ascii'))
+                    await loop.sock_sendall(client, "You not have permissions to chat\n".encode("utf-8"))
             else:
                 if not cmd.checkCommand(message):
-                    await loop.sock_sendall(client, 'Not correct command! For see command list write "help"\n'.encode('ascii'))
+                    await loop.sock_sendall(client, "Not correct command! For see command list write 'help'\n".encode("utf-8"))
                 else:
                     msg = cmd.makeCommand(message) + "\n"
                     if msg[0] == "c":
                         match msg[1]:
                             case "0": 1 / 0 # Error for quit =)
-                    await loop.sock_sendall(client, msg.encode('ascii'))            
+                    await loop.sock_sendall(client, msg.encode("utf-8"))            
         except Exception as err:
             print(err)
             # Removing And Closing Clients
-            print("{} disconnected!".format(client.getpeername()))
+            print(f"{client.getpeername()} disconnected!")
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            await broadcast("SERVER: ", '{} left!\n'.format(nickname).encode('ascii'))
+            await broadcast("SERVER: ", f"{nickname} left!\n".encode("utf-8"))
             nicknames.remove(nickname)
             cmd.stop()
             break
@@ -75,7 +75,7 @@ async def receive():
         cmd = None
         # Accept Connection
         client, address = await loop.sock_accept(server)
-        print("Connected with {}".format(str(address)))
+        print(f"Connected with {address}")
         
         # Has account or not
         successLogin = False
@@ -85,41 +85,41 @@ async def receive():
         password = ""
         try:
             while True:
-                client.send('Has account? [y/n] '.encode('ascii'))
-                hasAcc = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
+                client.send("Has account? [y/n] ".encode("utf-8"))
+                hasAcc = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
                 if hasAcc in "yes" or hasAcc in "not":
                     break
             while not successLogin:
                 if hasAcc in "not":
-                    client.send('Your login: '.encode('ascii'))
-                    login = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
-                    client.send('Your nickname: '.encode('ascii'))
-                    nickname = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
-                    client.send('Your password: '.encode('ascii'))
-                    password = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
+                    client.send("Your login: ".encode("utf-8"))
+                    login = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
+                    client.send("Your nickname: ".encode("utf-8"))
+                    nickname = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
+                    client.send("Your password: ".encode("utf-8"))
+                    password = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
                     successLogin = form.registration(login, nickname, password)
                     if not successLogin:
-                        msg = "Login {} already used\n".format(login)
-                        client.send(msg.encode('ascii'))
+                        msg = f"Login {login} already used\n"
+                        client.send(msg.encode("utf-8"))
                 elif hasAcc in "yes":
-                    client.send('Your login: '.encode('ascii'))
-                    login = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
-                    client.send('Your password: '.encode('ascii'))
-                    password = (await loop.sock_recv(client, 1024)).decode('ascii').strip()
+                    client.send("Your login: ".encode("utf-8"))
+                    login = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
+                    client.send("Your password: ".encode("utf-8"))
+                    password = (await loop.sock_recv(client, 1024)).decode("utf-8").strip()
                     successLogin, nickname = form.login(login, password)
                     if not successLogin:
-                        client.send('Not correct login or password\n'.encode('ascii'))
+                        client.send("Not correct login or password\n".encode("utf-8"))
             cmd = Executor(login)
 
             if cmd.checkPerms(1) == "0":
-                client.send('This account has banned\n'.encode('ascii'))
-                print("{} disconnected!".format(address))
+                client.send("This account has banned\n".encode("utf-8"))
+                print(f"{address} disconnected!")
                 form.stop()
                 client.close()
                 continue
         except Exception as err:
             print(err)
-            print("{} disconnected!".format(address))
+            print(f"{address} disconnected!")
             form.stop()
             client.close()
             continue
@@ -129,9 +129,9 @@ async def receive():
 
         # Print And Broadcast Nickname
         print("Nickname is", nickname)
-        client.send('Connected to server!\n'.encode('ascii'))
-        msg = str(nickname) + " joined!\n"
-        await broadcast("SERVER: ", msg.encode('ascii'))
+        client.send("Connected to server!\n".encode("utf-8"))
+        msg = f"{nickname} joined!\n"
+        await broadcast("SERVER: ", msg.encode("utf-8"))
 
         form.stop()
 
