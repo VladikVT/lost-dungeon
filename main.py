@@ -7,6 +7,7 @@ from login import LRform
 from commands import Executor
 
 import databases
+from databases import db
 
 logging.basicConfig(filename='.log', encoding='utf-8', format="[%(asctime)s] %(levelname)s: %(message)s", level=logging.NOTSET)
 
