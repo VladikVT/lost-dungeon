@@ -6,6 +6,8 @@ import logging
 from login import LRform
 from commands import Executor
 
+import databases
+
 logging.basicConfig(filename='.log', encoding='utf-8', format="[%(asctime)s] %(levelname)s: %(message)s", level=logging.NOTSET)
 
 # Connection Data
