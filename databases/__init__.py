@@ -40,7 +40,7 @@ class Character(db.Entity):
     # Character level
     level = Required(int, size=32, default=1)
     # Character experience
-    experience = Optional(int, size=32)
+    experience = Optional(int, size=32, default=0)
     # Character race
     race = Required(str)
     # Character class
