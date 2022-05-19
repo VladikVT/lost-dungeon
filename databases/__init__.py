@@ -43,8 +43,10 @@ class Character(db.Entity):
     experience = Optional(int, size=32)
     # Character race
     race = Required(str)
-    # Character profession (class ???)
-    profession = Required(str)
+    # Character class
+    kind = Required(str)
+    # Character profession
+    profession = Optional(str)
     # Character location (location ID)
     location = Required(int, size=32, default=0)
     # Character X position
