@@ -24,8 +24,6 @@ class User(db.Entity):
     last_online = Required(date)
     # User last IP
     last_ip = Optional(str, 15, nullable=True)
-    state = Required(int, size=32, default=0)
-    # User state (what ???)
 
 
 class Character(db.Entity):
@@ -53,8 +51,6 @@ class Character(db.Entity):
     x = Optional(int, size=8, default=0)
     # Character Y position
     y = Optional(int, size=8, default=0)
-    # Character state (what ???)
-    state = Required(int, size=32, default=0)
 
 
 class Skills(db.Entity):
