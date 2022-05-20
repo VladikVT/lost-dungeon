@@ -1,6 +1,7 @@
 import asyncio
 
 from game.core.protocol import GameProtocol
+from databases import db
 
 
 async def main():
@@ -10,7 +11,7 @@ async def main():
     on_con_lost = loop.create_future()
 
     def factory():
-        return GameProtocol()
+        return GameProtocol(db)
 
     # Create server
     await loop.create_server(factory, '0.0.0.0', 4000)

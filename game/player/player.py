@@ -7,7 +7,9 @@ cmds = ["quit", "shit"]
 
 class Player:
 
-    def __init__(self, transport):
+    def __init__(self, game, transport):
+        self.game = game
+
         self.client = Client(transport)
         self.encoding = self.client.encoding
         self.state = StateMachine(self)
