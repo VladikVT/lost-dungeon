@@ -24,6 +24,8 @@ class User(db.Entity):
     last_online = Required(date)
     # User last IP
     last_ip = Optional(str, 15, nullable=True)
+    # User character
+    character = Set('Character')
 
 
 class Character(db.Entity):
@@ -53,6 +55,10 @@ class Character(db.Entity):
     x = Optional(int, size=8, default=0)
     # Character Y position
     y = Optional(int, size=8, default=0)
+    # Skills
+    skills = Set('Skills')
+    # Inventory
+    inventory = Set('Inventory')
 
 
 class Skills(db.Entity):
@@ -81,7 +87,7 @@ class Inventory(db.Entity):
     # All info about type and other characteristics gathered from .json file of this id
     item_id = Required(str)
     # Quality (1 - bad, 2 - decent, 3 - normal, 4 - great, 5 - master, 6 - mythical)
-    quality = Required(int, size=3)
+    quality = Required(int, size=8)
     # Durability
     durability = Required(int, default=100)
     # Max durability
