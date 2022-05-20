@@ -1,7 +1,6 @@
 import asyncio
 
-from game.client import Client
-from game.player import Player
+from game.player.player import Player
 
 
 class GameProtocol(asyncio.Protocol):

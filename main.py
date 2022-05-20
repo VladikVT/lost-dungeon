@@ -1,6 +1,6 @@
 import asyncio
 
-from game.protocol import GameProtocol
+from game.core.protocol import GameProtocol
 
 
 async def main():

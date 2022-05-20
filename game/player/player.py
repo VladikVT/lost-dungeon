@@ -1,6 +1,6 @@
-from game.client import Client
+from game.core.client import Client
 from game.states.login import LoginState
-from game.state import StateMachine
+from game.core.state import StateMachine
 
 cmds = ["quit", "shit"]
 
