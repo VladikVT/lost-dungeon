@@ -12,10 +12,10 @@ class ClientProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         data = data.decode(self.encoding)
-        print(f"SERVER >>> {data}\n")
+        print(f"SERVER >>> {data}")
 
     def connection_lost(self, exc):
-        print("The server closed the connection\n")
+        print("The server closed the connection")
         self.on_con_lost.set_result(True)
 
     def send(self, data):
@@ -24,7 +24,12 @@ class ClientProtocol(asyncio.Protocol):
     async def clientCmdHandler (self, loop):
         while True:
             cmd = await loop.run_in_executor(None, input, "YOU >>> ")
+            cmd.strip()
 
-            self.send(cmd)
+            if cmd != "":
+                self.send(cmd)
+
+            if cmd == "quit":
+                break
 
 

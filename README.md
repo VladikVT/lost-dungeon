@@ -6,8 +6,8 @@ If you want play on LD you need play from our client, we not support telnet
 ### Hosting:
 If you want to host LD:
 1. git clone https://github.com/vladikvt/lost-dungeon
-2. cd lost-dungeon/server
-3. python3 main.py
+2. cd lost-dungeon
+3. python3 coreLauncher.py
 
 ### Connect to server:
 If you want connect to LD:
