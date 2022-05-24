@@ -1,9 +1,16 @@
 import asyncio
+import json
 
 from game.entities.player.player import Player
 
 
 class CoreProtocol(asyncio.Protocol):
+    
+    jsonTempl = {
+            "code": 0,
+            "state": 0,
+            "message": "message"
+            }
 
     def connection_made(self, transport):
         self.peername = transport.get_extra_info("peername")
@@ -13,11 +20,18 @@ class CoreProtocol(asyncio.Protocol):
         self.player = Player(transport)
 
     def data_received(self, data):
-        cmd = data.decode(self.encoding)
-        self.player.cmdDetector(cmd)
-        print(f"{self.peername} >>> {data.decode(self.encoding)}")
+        try:
+            data = data.decode(self.encoding)
+            cmd = json.loads(data)["message"]
+            self.player.cmdDetector(cmd)
+            print(f"{self.peername} >>> {data}")
+        except Exception as exp:
+            print(f"ERROR[RECV] >>> {exp}")
 
-    def send(self, data):
+    def send(self, code, msg):
+        self.jsonTempl["code"] = code
+        self.jsonTempl["message"] = msg
+        data = json.dumps(self.jsonTempl)
         self.transport.write(data.encode(self.encoding))
 
 

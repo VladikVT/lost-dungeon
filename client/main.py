@@ -1,5 +1,21 @@
-import asyncio
+from threading import Thread
+import json
+from socket import *
+from client import ClientProtocol as CP
 
+host = "127.0.0.1"
+port = 4000
+encoding = "utf-8"
+
+sock = socket(AF_INET, SOCK_STREAM)
+sock.connect((host, port))
+
+client = CP(sock)
+
+if __name__ == "__main__":
+    client.run()
+
+'''
 from client import ClientProtocol as CP
 
 host = "127.0.0.1"
@@ -16,6 +32,7 @@ async def main():
         lambda: client,
         host, port)
     
-    await client.clientCmdHandler(loop)
+    await client.clientCmdHandler()
 
 asyncio.run(main())
+'''

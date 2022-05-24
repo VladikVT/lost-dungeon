@@ -1,35 +1,67 @@
-import asyncio
+from threading import Thread
+from socket import *
+import json
 
 
-class ClientProtocol(asyncio.Protocol):
-    def __init__(self, on_con_lost, loop):
-        self.on_con_lost = on_con_lost
-        self.loop = loop
+class ClientProtocol():
+    
+    jsonTempl = {
+            "code": 0,
+            "state": 0,
+            "message": "message"
+            }
+
+    def __init__(self, sock):
+        self.sock = sock
         self.encoding = "utf-8"
+        self.state = 0
+        self.mainHandleOn = True
 
-    def connection_made(self, transport):
-        self.transport = transport
+    def run(self):
+        self.listenThread = Thread(target = self.Listener)
+        self.listenThread.start()
+        self.handle()
 
-    def data_received(self, data):
-        data = data.decode(self.encoding)
-        print(f"SERVER >>> {data}")
+    def Listener(self):
+        try:
+            while True:
+                data = self.sock.recv(1024).decode(self.encoding)
+                if not data: break
+                data = json.loads(data)
+                self.state = data["state"]
+                self.stateMachine()
+                print(f"\nSERVER >>> {data}")
+        except Exception as exc:
+            print(f"Listener === {exc}")
+        finally:
+            print("Stop connection")
+            self.sock.close()
 
-    def connection_lost(self, exc):
-        print("The server closed the connection")
-        self.on_con_lost.set_result(True)
+    def handle(self):
+        try:
+            while True:
+                if self.mainHandleOn:
+                    msg = input("YOU >>> ")
+                    if msg == "": continue
+                    self.send(0, msg)
+        except Exception as exc:
+            print(f"handle === {exc}")
+        finally:
+            self.sock.close()
+    
+    def send(self, code, msg):
+        self.jsonTempl["code"] = code
+        self.jsonTempl["state"] = self.state
+        self.jsonTempl["message"] = msg
+        data = json.dumps(self.jsonTempl)
+        self.sock.send(data.encode(self.encoding))
 
-    def send(self, data):
-        self.transport.write(data.encode(self.encoding))
-        
-    async def clientCmdHandler (self, loop):
-        while True:
-            cmd = await loop.run_in_executor(None, input, "YOU >>> ")
-            cmd.strip()
-
-            if cmd != "":
-                self.send(cmd)
-
-            if cmd == "quit":
-                break
-
-
+    def stateMachine(self):
+        match self.state:
+            case 3:
+                self.mainHandleOn = False
+                login = input("Login: ")
+                nick = input("Nickname: ")
+                password = input("Password: ")
+                self.send(0, f"{login}*{nick}*{password}")
+                self.mainHandleOn = True
