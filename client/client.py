@@ -28,8 +28,9 @@ class ClientProtocol():
                 data = self.sock.recv(1024).decode(self.encoding)
                 if not data: break
                 data = json.loads(data)
-                self.state = data["state"]
-                self.stateMachine()
+                if data["code"] == 0:
+                    self.state = data["state"]
+                    self.stateMachine()
                 print(f"\nSERVER >>> {data}")
         except Exception as exc:
             print(f"Listener === {exc}")
@@ -42,6 +43,7 @@ class ClientProtocol():
             while True:
                 if self.mainHandleOn:
                     msg = input("YOU >>> ")
+                    msg.strip()
                     if msg == "": continue
                     self.send(0, msg)
         except Exception as exc:
@@ -58,6 +60,12 @@ class ClientProtocol():
 
     def stateMachine(self):
         match self.state:
+            case 2:
+                self.mainHandleOn = False
+                login = input("Login: ")
+                password = input("Password: ")
+                self.send(0, f"{login}*{password}")
+                self.mainHandleOn = True
             case 3:
                 self.mainHandleOn = False
                 login = input("Login: ")

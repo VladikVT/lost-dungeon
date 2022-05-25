@@ -1,6 +1,8 @@
 import asyncio
 import json
 
+clients = []
+
 class Player:
 
     jsonTempl = {
@@ -18,7 +20,8 @@ class Player:
     def cmdDetector(self, cmd):
         cmd.strip()
         if cmd[0] == "!":
-            print(cmd)
+            for i in clients:
+                self.send(1, cmd, i)
             return
         
         command = cmd.partition(" ")[0]
@@ -48,16 +51,26 @@ class Player:
                 self.send(0, "")
             case 1:
                 self.send(0, "Has account [y/n] ")
+            case 2:
+                self.state = 4
+                clients.append(self.transport)
+                self.send(0, "Success login")
             case 3:
                 self.state = 4
-                self.send(0, "Success login")
+                clients.append(self.transport)
+                self.send(0, "Success registration")
 
-    def send(self, code, msg):
+    def send(self, code, msg, client = None):
         self.jsonTempl["code"] = code
         self.jsonTempl["state"] = self.state
         self.jsonTempl["message"] = msg
         data = json.dumps(self.jsonTempl)
-        self.transport.write(data.encode(self.encoding))
+        if client:
+            client.write(data.encode(self.encoding))
+        else:
+            self.transport.write(data.encode(self.encoding))
+
+
 
     def kick(self):
         self.transport.close()
