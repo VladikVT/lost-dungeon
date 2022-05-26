@@ -21,7 +21,7 @@ class User(db.Entity):
     # 3-6. other
     permissions = Required(int, size=32, default=1110000)
     # User last online date
-    last_online = Required(date)
+    last_online = Optional(date)
     # User last IP
     last_ip = Optional(str, 15, nullable=True)
     # User character

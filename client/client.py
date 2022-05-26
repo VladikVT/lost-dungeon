@@ -15,9 +15,11 @@ class ClientProtocol():
         self.sock = sock
         self.encoding = "utf-8"
         self.state = 0
-        self.mainHandleOn = True
+        self.working = False
+        self.debugMode = False
 
     def run(self):
+        self.working = True
         self.listenThread = Thread(target = self.Listener)
         self.listenThread.start()
         self.handle()
@@ -25,30 +27,39 @@ class ClientProtocol():
     def Listener(self):
         try:
             while True:
+                if not self.working:
+                    return
                 data = self.sock.recv(1024).decode(self.encoding)
-                if not data: break
+                if not data: 
+                    break
                 data = json.loads(data)
                 if data["code"] == 0:
                     self.state = data["state"]
-                    self.stateMachine()
-                print(f"\nSERVER >>> {data}")
+                if self.debugMode:
+                    print(f"SERVER >>> {data}")
+                else:
+                    print(f"SERVER >>> {data['message']}")
         except Exception as exc:
             print(f"Listener === {exc}")
         finally:
             print("Stop connection")
+            self.working = False
             self.sock.close()
 
     def handle(self):
         try:
             while True:
-                if self.mainHandleOn:
-                    msg = input("YOU >>> ")
-                    msg.strip()
-                    if msg == "": continue
-                    self.send(0, msg)
+                msg = input()
+                if not self.working:
+                    return
+                msg.strip()
+                if msg == "": 
+                    continue
+                self.send(0, msg)
         except Exception as exc:
             print(f"handle === {exc}")
         finally:
+            self.working = False
             self.sock.close()
     
     def send(self, code, msg):
@@ -57,19 +68,3 @@ class ClientProtocol():
         self.jsonTempl["message"] = msg
         data = json.dumps(self.jsonTempl)
         self.sock.send(data.encode(self.encoding))
-
-    def stateMachine(self):
-        match self.state:
-            case 2:
-                self.mainHandleOn = False
-                login = input("Login: ")
-                password = input("Password: ")
-                self.send(0, f"{login}*{password}")
-                self.mainHandleOn = True
-            case 3:
-                self.mainHandleOn = False
-                login = input("Login: ")
-                nick = input("Nickname: ")
-                password = input("Password: ")
-                self.send(0, f"{login}*{nick}*{password}")
-                self.mainHandleOn = True
