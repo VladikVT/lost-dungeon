@@ -1,10 +1,17 @@
 # lost-dungeon
 Lost Dungeon - MUD (Multi User Dungeon) <br />
-Current ip address: (comming soon)
+Server status: not running <br />
+If you want play on LD you need play from our client, we not support telnet
 
 ### Hosting:
 If you want to host LD:
 1. git clone https://github.com/vladikvt/lost-dungeon
-2. Rename 'databases/accountsEXAMPLE' to 'databases/accounts'
-3. Run 'python3 main.py'
-4. Run 'telnet [server ip] 4000'
+2. cd lost-dungeon
+3. python3 coreLauncher.py
+
+### Connect to server:
+If you want connect to LD:
+1. git clone https://github.com/vladikvt/lost-dungeon
+2. cd lost-dungeon/client
+3. python3 main.py
+
