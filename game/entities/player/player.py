@@ -87,7 +87,7 @@ class Player:
                     self.send(0, "This name already used!\nCharacter name: ")
                     return
                 self.state = 7
-                self.send(0, "Choose class:\n1. Human\n2. Elf\n3. Dwarf\n(Write class number)")
+                self.send(0, "Choose race:\n1. Human\n2. Elf\n3. Dwarf\n(Write class number)")
             case 7:
                 match command:
                     case "1" | "human":
@@ -129,7 +129,6 @@ class Player:
                         self.stateMachine(self.kind)
                         return
                 self.state = 10
-                self.send(0, "Choose race:\n1. Human\n2. Elf\n3. Dwarf\n(Write race number)")
                 self.createUser()
                 self.createCharacter()
                 self.updateLoginData()
@@ -187,7 +186,7 @@ class Player:
 
     @db_session
     def createCharacter(self):
-        Character(name = self.charName, race = self.race, kind = self.kind, profession = self.profession, user = self.login)
+        Character(name = self.charName, race = self.race, kind = self.kind, profession = self.profession, user = User.get(login = self.login))
         commit()
 
 
