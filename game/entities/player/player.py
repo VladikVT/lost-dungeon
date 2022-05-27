@@ -1,6 +1,7 @@
 import asyncio
 import json
 from pony.orm import *
+from datetime import datetime
 
 from databases import User, Character
 
@@ -22,18 +23,19 @@ class Player:
 
     def cmdDetector(self, cmd):
         cmd.strip()
-        if cmd[0] == "!" and self.state == 6:
+        
+        command = cmd.partition(" ")[0]
+        argument = cmd.partition(" ")[2]
+        
+        if self.state != 10:
+            self.stateMachine(command)
+            return
+
+        if cmd[0] == "!":
             for i in clients:
                 self.send(1, cmd, i)
             return
         
-        command = cmd.partition(" ")[0]
-        argument = cmd.partition(" ")[2]
-
-        self.stateMachine(command)
-
-        if self.state != 6:
-            return
 
         match command:
             case "quit":
@@ -60,31 +62,81 @@ class Player:
                 self.send(0, "Password: ")
             case 3:
                 self.password = command
-                if not self.checkUserPass(self.login, self.password):
-                    self.state = 0
-                    self.send(0, "Login or password incorrect!")
-                    self.stateMachine()
+                if not self.checkUserPass():
+                    self.state = 2
+                    self.send(0, "Login or password incorrect!\nLogin: ")
                     return
-                self.state = 6
-                self.send(0, "Success login!")
+                self.state = 10
+                self.updateLoginData()
                 clients.append(self.transport)
+                self.send(0, "Success login!")
             case 4:
                 self.login = command
+                if self.checkUser():
+                    self.send(0, "This login already used!\nLogin: ")
+                    return
                 self.state = 5
                 self.send(0, "Password: ")
             case 5:
                 self.password = command
-                if self.checkUser(self.login):
-                    self.state = 0
-                    self.send(0, "This login already used!")
-                    self.stateMachine()
-                    return
-                self.send(0, "Success registration!")
-                print(f"New user: {self.login}, {self.password}")
-                self.createUser(self.login, self.password)
                 self.state = 6
+                self.send(0, "Character name: ")
+            case 6:
+                self.charName = command
+                if self.checkCharacter():
+                    self.send(0, "This name already used!\nCharacter name: ")
+                    return
+                self.state = 7
+                self.send(0, "Choose class:\n1. Human\n2. Elf\n3. Dwarf\n(Write class number)")
+            case 7:
+                match command:
+                    case "1" | "human":
+                        self.race = "human"
+                    case "2" | "elf":
+                        self.race = "elf"
+                    case "3" | "dwarf":
+                        self.race = "dwarf"
+                    case _:
+                        self.state = 6
+                        self.stateMachine(self.charName)
+                        return
+                self.state = 8
+                self.send(0, "Choose class:\n1. Wizard\n2. Ranger\n3. Warrior\n(Write class number)")
+            case 8:
+                match command:
+                    case "1" | "wizard":
+                        self.kind = "wizard"
+                    case "2" | "ranger":
+                        self.kind = "ranger"
+                    case "3" | "warrior":
+                        self.kind = "warrior"
+                    case _:
+                        self.state = 7
+                        self.stateMachine(self.race)
+                        return
+                self.state = 9
+                self.send(0, "Choose profession:\n1. Blacksmith\n2. Alchemist\n3. Baker\n(Write profession number)")
+            case 9:
+                match command:
+                    case "1" | "blacksmith":
+                        self.profession = "blacksmith"
+                    case "2" | "alchemist":
+                        self.profession = "alchemist"
+                    case "3" | "baker":
+                        self.profession = "baker"
+                    case _:
+                        self.state = 8
+                        self.stateMachine(self.kind)
+                        return
+                self.state = 10
+                self.send(0, "Choose race:\n1. Human\n2. Elf\n3. Dwarf\n(Write race number)")
+                self.createUser()
+                self.createCharacter()
+                self.updateLoginData()
+                self.state = 10
                 clients.append(self.transport)
-                self.send(0, "")
+                print(f"New user: {self.login}, {self.password}")
+                self.send(0, "Success registration!")
 
     def send(self, code, msg, client = None):
         self.jsonTempl["code"] = code
@@ -92,29 +144,50 @@ class Player:
         self.jsonTempl["message"] = msg
         data = json.dumps(self.jsonTempl)
         if client:
-            client.write(data.encode(self.encoding))
+            try:
+                client.write(data.encode(self.encoding))
+            except:
+                clients.remove(client)
         else:
             self.transport.write(data.encode(self.encoding))
 
     def kick(self):
         self.transport.close()
+    
+    @db_session
+    def updateLoginData(self):
+        user = User.get(login = self.login)
+        user.last_online = datetime.now()
+        user.last_ip = self.transport.get_extra_info("socket").getpeername()[0]
+        commit()
 
     @db_session
-    def checkUser(self, login):
-        if User.get(login=login):
+    def checkUser(self):
+        if User.get(login = self.login):
+            return True
+        return False
+
+    @db_session
+    def checkCharacter(self):
+        if Character.get(name = self.charName):
             return True
         return False
     
     @db_session
-    def checkUserPass(self, login, password):
-        user = User.get(login=login)
-        if user and user.password == password:
+    def checkUserPass(self):
+        user = User.get(login = self.login)
+        if user and user.password == self.password:
             return True
         return False
 
     @db_session
-    def createUser(self, login, password):
-        User(login=login, password=password)
+    def createUser(self):
+        User(login = self.login, password = self.password)
+        commit()
+
+    @db_session
+    def createCharacter(self):
+        Character(name = self.charName, race = self.race, kind = self.kind, profession = self.profession, user = self.login)
         commit()
 
 
