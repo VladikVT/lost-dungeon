@@ -19,6 +19,9 @@ class CoreProtocol(asyncio.Protocol):
         self.encoding = "utf-8"
         self.player = Player(transport)
 
+    def connection_lost(self, exc):
+        print(f"{self.peername} disconnected")
+
     def data_received(self, data):
         try:
             data = data.decode(self.encoding)
