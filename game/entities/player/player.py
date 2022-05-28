@@ -32,10 +32,12 @@ class Player:
             self.stateMachine(command)
             return
 
-        if cmd[0] == "!":
+        if cmd[0] == "!" and self.checkPermission(5) == 1:
             for i in clients:
                 self.send(1, cmd, client = i, sender = self.charName)
             return 
+        else:
+            self.send(1, "You dont have permissions to chatting!")
 
         match command:
             case "quit":
@@ -155,6 +157,11 @@ class Player:
 
     def kick(self):
         self.transport.close()
+
+    @db_session
+    def checkPermission(self, permission):
+        user = User.get(login = self.login)
+        return user.permissions // 10**permission % 10
 
     @db_session
     def getCharNameByUserLogin(self):
