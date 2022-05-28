@@ -32,9 +32,9 @@ class ClientProtocol(asyncio.Protocol):
             if message["code"] == 0:
                 self.state = message["state"]
             if self.debugMode:
-                print(f"SERVER >>> {message}")
+                print(f"{message['sender']} >>> {message}")
             else:
-                print(f"SERVER >>> {message['message']}")
+                print(f"{message['sender']} >>> {message['message']}")
         except Exception as exc:
             print(f"Listener === {exc}")
             print("Stop connection")

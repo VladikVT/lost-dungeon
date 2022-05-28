@@ -12,6 +12,7 @@ class Player:
     jsonTempl = {
             "code": 0,
             "state": 0,
+            "sender": "SERVER",
             "message": "message"
             }
 
@@ -33,9 +34,8 @@ class Player:
 
         if cmd[0] == "!":
             for i in clients:
-                self.send(1, cmd, i)
-            return
-        
+                self.send(1, cmd, client = i, sender = self.charName)
+            return 
 
         match command:
             case "quit":
@@ -68,6 +68,7 @@ class Player:
                     return
                 self.state = 10
                 self.updateLoginData()
+                self.getCharNameByUserLogin()
                 clients.append(self.transport)
                 self.send(0, "Success login!")
             case 4:
@@ -132,14 +133,16 @@ class Player:
                 self.createUser()
                 self.createCharacter()
                 self.updateLoginData()
+                self.getCharNameByUserLogin()
                 self.state = 10
                 clients.append(self.transport)
                 print(f"New user: {self.login}, {self.password}")
                 self.send(0, "Success registration!")
 
-    def send(self, code, msg, client = None):
+    def send(self, code, msg, client = None, sender = "SERVER"):
         self.jsonTempl["code"] = code
         self.jsonTempl["state"] = self.state
+        self.jsonTempl["sender"] = sender
         self.jsonTempl["message"] = msg
         data = json.dumps(self.jsonTempl)
         if client:
@@ -152,7 +155,13 @@ class Player:
 
     def kick(self):
         self.transport.close()
-    
+
+    @db_session
+    def getCharNameByUserLogin(self):
+        user = User.get(login = self.login)
+        for i in user.character:
+            self.charName = i.name
+
     @db_session
     def updateLoginData(self):
         user = User.get(login = self.login)
@@ -186,7 +195,8 @@ class Player:
 
     @db_session
     def createCharacter(self):
-        Character(name = self.charName, race = self.race, kind = self.kind, profession = self.profession, user = User.get(login = self.login))
+        user = User.get(login = self.login)
+        user.character.create(name = self.charName, race = self.race, kind = self.kind, profession = self.profession)
         commit()
 
 
